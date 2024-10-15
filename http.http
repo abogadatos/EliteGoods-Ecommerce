@@ -1,0 +1,54 @@
+// CATEGORIES
+
+GET http://localhost:3000/categories/getter HTTP/1.1
+
+###
+
+GET http://localhost:3000/categories/seeder HTTP/1.1
+
+###
+
+POST http://localhost:3000/categories/addCategory HTTP/1.1
+content-type: application/json
+
+{
+  "name": "computer"
+}
+
+###
+
+
+// PRODUCTS
+
+// USERS
+
+GET  http://localhost:3000/users/ HTTP/1.1
+
+###
+
+GET http://localhost:3000/users/info/23d95f28-2373-41ce-99d4-8c3aa0da92be HTTP/1.1
+
+###
+// AUTH
+POST http://localhost:3000/auth/signup HTTP/1.1
+content-type: application/json
+
+{
+  "name": "Luis Carlos Galán",
+  "email": "carlosgalan@example.com",
+  "password": "coAtra@123@",
+  "phone": 534533251,
+  "country": "Mexico",
+  "address": "Fake address 4241",
+  "city": "Texcoco"
+}
+
+###
+
+POST http://localhost:3000/auth/signin HTTP/1.1
+content-type: application/json
+
+{
+    "email": "carlosgalan@example.com",
+    "password": "coAtra@123@"
+}
