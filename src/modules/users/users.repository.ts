@@ -13,22 +13,33 @@ export class usersCustomRepo {
   ) {}
 
   async initializeUser() {
-    data.map(async (element) => {
-      await this.usersRepository
-        .createQueryBuilder()
-        .insert()
-        .into(User)
-        .values({
-          name: element.name,
-          email: element.email,
-          password: await bcrypt.hash(element.password, 10),
-          phone: element.phone,
-          country: element.country,
-          address: element.address,
-          city: element.city,
-        })
-        .orIgnore()
-        .execute();
-    });
+    const existingUsers = await this.usersRepository.count();
+
+    if (existingUsers === 0) {
+      data.map(async (element) => {
+        await this.usersRepository
+          .createQueryBuilder()
+          .insert()
+          .into(User)
+          .values({
+            name: element.name,
+            email: element.email,
+            password: await bcrypt.hash(element.password, 10),
+            phone: element.phone,
+            country: element.country,
+            address: element.address,
+            city: element.city,
+          })
+          .orIgnore()
+          .execute();
+      });
+      console.log(`Users were added from users' custom repo`);
+      return {
+        message: `Users were added from users' custom repo`,
+      };
+    } else if (existingUsers > 0) {
+      console.warn('Users already exist within database');
+      return `Users already exist within database`;
+    }
   }
 }

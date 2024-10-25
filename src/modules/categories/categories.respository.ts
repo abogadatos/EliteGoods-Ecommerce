@@ -29,12 +29,12 @@ export class CategoriesCustomRepository {
       });
       console.log(`Categories were added from categories custom repo`);
       return {
-        message: `The categories are unique and already exist in the categories table`,
+        message: `Categories were added from categories custom repo`,
       };
-    } else {
-      console.log(`Categories already seeded`);
+    } else if (existingCategories > 0) {
+      console.warn(`Categories already exist within the database`);
       return {
-        message: `Categories already exist`,
+        message: `Categories already exist within the database`,
       };
     }
   }

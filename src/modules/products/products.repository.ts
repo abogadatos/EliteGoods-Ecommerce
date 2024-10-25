@@ -15,46 +15,51 @@ export class ProductsCustomRepository {
   ) {}
 
   async seedProducts() {
-    const categories = await this.categoriesRepository.find();
+    const existingProducts = await this.productsRepository.count();
+
     // console.log(categories);
-
-    for (const element of data) {
-      const category = categories.find(
-        (category) => category.name === element.category,
-      );
-      //   console.log(category);
-
-      if (category) {
-        console.log(
-          `INSERTING: Product '${element.name}' under category: -> '${category.name}'`,
+    if (existingProducts === 0) {
+      const categories = await this.categoriesRepository.find();
+      for (const element of data) {
+        const category = categories.find(
+          (category) => category.name === element.category,
         );
+        //   console.log(category);
 
-        this.productsRepository
-          .createQueryBuilder()
-          .insert()
-          .into(Product)
-          .values({
-            name: element.name,
-            description: element.description,
-            price: element.price,
-            imgUrl: element.imgUrl,
-            stock: element.stock,
-            category: {
-              id: category.id,
-            },
-          })
-          .orIgnore()
-          .execute();
+        if (category) {
+          console.log(
+            `INSERTING: Product '${element.name}' under category: -> '${category.name}'`,
+          );
 
-        console.log(`LOG: Product '${element.name}' added successfully`);
-      } else {
-        console.log(
-          `LOG: Category ${element.category} not found for product ${element.name}`,
-        );
+          this.productsRepository
+            .createQueryBuilder()
+            .insert()
+            .into(Product)
+            .values({
+              name: element.name,
+              description: element.description,
+              price: element.price,
+              imgUrl: element.imgUrl,
+              stock: element.stock,
+              category: {
+                id: category.id,
+              },
+            })
+            .orIgnore()
+            .execute();
+
+          console.log(`LOG: Product '${element.name}' added successfully`);
+        } else {
+          console.log(
+            `LOG: Category ${element.category} not found for product ${element.name}`,
+          );
+        }
       }
+    } else if (existingProducts > 0) {
+      console.warn('Products already exist within database');
+      return {
+        message: `Products already exist within database`,
+      };
     }
-    return {
-      message: `Products already exist`,
-    };
   }
 }

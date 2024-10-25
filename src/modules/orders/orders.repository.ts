@@ -49,7 +49,6 @@ export class ordersCustomRepository {
     this.prices = [];
     this.totalPrice = 0;
 
-    // Find the user by ID
     const user = await this.usersRepository.findOne({
       where: { id: orderData.userID },
       relations: { orders: true },
@@ -69,18 +68,25 @@ export class ordersCustomRepository {
       const product = await this.productsRepository.findOne({
         where: { id: productObj.id },
       });
+      console.log(productObj);
+      console.log(product);
 
       if (!product) {
-        throw new BadRequestException(
+        throw new NotFoundException(
           `Product with ID ${productObj.id} not found`,
         );
       }
 
-      // Check if the product has enough stock, throw an error if stock is zero
-      await this.stockController(product);
+      if (product.stock < productObj.quantity) {
+        throw new BadRequestException(
+          `Insufficient stock for product ID ${productObj.id}. Available: ${product.stock}, Requested: ${productObj.quantity}`,
+        );
+      }
 
-      // Sum prices and add the product to the list only after checking stock
-      this.sumAllPrices(product);
+      product.stock -= productObj.quantity;
+      await this.productsRepository.save(product);
+
+      this.sumAllPrices(product, productObj.quantity);
       products.push(product);
     }
 
@@ -120,17 +126,9 @@ export class ordersCustomRepository {
     return `${currentDate} ${hours}hs`;
   }
 
-  private sumAllPrices(product: Product): void {
-    if (!product) return;
-    const price = product.price;
-    const priceRounded = Math.round(price);
-    this.prices.push(priceRounded);
-
-    const addition = this.prices.reduce(
-      (total, currentPrice) => total + currentPrice,
-    );
-    const priceToCustomer = (addition - 0.01).toFixed(2);
-    this.totalPrice = Number(priceToCustomer);
+  private sumAllPrices(product: Product, quantity: number): void {
+    const totalProductPrice = product.price * quantity;
+    this.totalPrice += Math.round(totalProductPrice * 100) / 100; // rounding to 2 decimal places
   }
 
   private async stockController(product: Product) {
