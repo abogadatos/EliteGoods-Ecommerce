@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -51,6 +52,22 @@ export class UsersController {
         404,
       );
     }
+  }
+
+  @Put('updateRole/:userID')
+  @ApiBearerAuth()
+  @Roles(Role.SuperAdmin, Role.Admin)
+  @UseGuards(AuthGuard, RolesGuard)
+  async updateUserRoles(
+    @Param('userID', new ParseUUIDPipe()) userID: string,
+    @Body('role') role: string,
+  ) {
+    const roleEnum = Role[role as keyof typeof Role];
+    if (!roleEnum) {
+      throw new BadRequestException('Invalid role provided');
+    }
+
+    return await this.usersRepositoryService.updateUserRoles(userID, roleEnum);
   }
 
   @Get(':email')

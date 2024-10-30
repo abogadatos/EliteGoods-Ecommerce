@@ -1,11 +1,16 @@
 // import { UsersRepository } from './users.repository';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/database/entities/user.entity';
 import { Repository } from 'typeorm';
 import { usersCustomRepo } from './users.repository';
 import { UserWithoutPassword } from './types/userWithoutPassword.type';
 import { UpdateUserDto } from './dto/updateUser.dto';
+import { Role } from 'src/enum/role.enum';
 
 @Injectable()
 export class UsersService {
@@ -59,6 +64,20 @@ export class UsersService {
     const { password, ...userWithoutPassword } = user;
 
     return userWithoutPassword;
+  }
+
+  async updateUserRoles(userID: string, newRole: Role) {
+    const user = await this.usersRepository.findOne({ where: { id: userID } });
+    if (!user) throw new NotFoundException('User not found or does not exist');
+
+    if (![Role.Admin, Role.User].includes(newRole)) {
+      throw new BadRequestException('Invalid role specified');
+    }
+
+    user.roles = [newRole];
+    await this.usersRepository.save(user);
+
+    return { message: `User role updated to ${newRole} successfully` };
   }
 
   async updateUser(userData: UpdateUserDto, userID: string) {
